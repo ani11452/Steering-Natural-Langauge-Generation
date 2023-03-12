@@ -7,3 +7,4 @@ realtoxicityprompts-data.tar.gz
 realtoxicityprompts-data/*
 .DS_Store/*
 .DS_Store
+__pycache__/*
