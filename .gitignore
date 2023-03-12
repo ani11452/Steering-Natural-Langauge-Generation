@@ -5,3 +5,5 @@ glove.6B.zip
 log.txt
 realtoxicityprompts-data.tar.gz
 realtoxicityprompts-data/*
+.DS_Store/*
+.DS_Store
