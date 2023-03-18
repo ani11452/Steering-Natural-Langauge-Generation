@@ -1,5 +1,7 @@
 from googleapiclient import discovery
+from googleapiclient.errors import HttpError
 import json
+import time
 
 PROMPT_PATH = './realtoxicityprompts-data/prompts.jsonl'
 
@@ -8,8 +10,11 @@ class TestHarness:
         self.API_KEY = "AIzaSyBhoNi1Om9gxeVIGcMdlLfTCeXYQgb8EU8"
         self.challenging_prompts = []
         self.load_prompts()
+        self.last_called = time.time()
 
     def get_perspective_score(self, text):
+
+        time.sleep(max(0, 1.1-(time.time()-self.last_called)))
         client = discovery.build(
         "commentanalyzer",
         "v1alpha1",
@@ -21,8 +26,15 @@ class TestHarness:
         'comment': { 'text': f'{text}' },
         'requestedAttributes': {'TOXICITY': {}}
         }
-        response = client.comments().analyze(body=analyze_request).execute()
-        return response['attributeScores']['TOXICITY']['summaryScore']['value']
+        try:
+            self.last_called = time.time()
+            response = client.comments().analyze(body=analyze_request).execute()
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return -1
+        score = response['attributeScores']['TOXICITY']['summaryScore']['value']
+        # print(score)
+        return score
 
     def load_prompts(self):
         json_list = []

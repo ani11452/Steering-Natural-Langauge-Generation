@@ -30,7 +30,7 @@ class WordBank:
         self.word_bank = []
         with open('bad_words.csv') as bad_words_csv:
             self.word_bank = list(csv.reader(bad_words_csv, delimiter=","))[0]
-        print(self.word_bank)
+        #print(self.word_bank)
 
         # Create Word Embeddings Matrix
         final_word_bank = []
@@ -53,14 +53,14 @@ class WordBank:
         # use k-means to auto-cluster the word bank
 
         word_vectors = self.wb_embeddings
-        print(word_vectors.shape)
+        #print(word_vectors.shape)
         num_clusters = self.n_clusters
 
         clusterer = KMeans(n_clusters=num_clusters)
         clusterer.fit(word_vectors)
 
         self.clusters = clusterer.labels_
-        print(self.clusters)
+        #print(self.clusters)
 
 
     def calculate_score(self, embeddings, score_mode):
