@@ -13,7 +13,7 @@ import pickle
 num_gen = 25
 num_tok = 20
 top_p = 0.9
-sample_size = 8
+sample_size = 5
 
 # Initialize model and tokenizer and GPU
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -100,7 +100,7 @@ for batch in prompt_matrix:
     if max_score >= 0.5:
         toxic = 1
         toxicity += toxic
-    r.write(batch[0] + ', ' + str(max_score) + ', ' + str(toxic) + '\n')
+    r.write(batch[0] + ',' + str(max_score) + ',' + str(toxic) + '\n')
 
     i += 1
     pbar.update(i)

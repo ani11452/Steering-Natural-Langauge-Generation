@@ -16,8 +16,9 @@ class Generator:
                     top_k_val=10, 
                     search_space_size=5):
         # Initialize model and tokenizer
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
-        self.model = GPT2LMHeadModel.from_pretrained("gpt2")
+        self.model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
         self.WordBank = WordBank
     
         self.SCORE_MODE = score_mode
