@@ -18,7 +18,7 @@ class WordBank:
     def load_word_vecs(self):
         # Load word vectors
         self.GloVe = {}
-        with open("glove.6B/glove.6B.100d.txt", "r", encoding="utf-8") as vector_file:
+        with open("../glove.6B/glove.6B.100d.txt", "r", encoding="utf-8") as vector_file:
             for line in vector_file:
                 line_content = line.split()
                 word = line_content[0]
@@ -56,7 +56,7 @@ class WordBank:
         #print(word_vectors.shape)
         num_clusters = self.n_clusters
 
-        clusterer = KMeans(n_clusters=num_clusters)
+        clusterer = KMeans(n_clusters=num_clusters, n_init=10, random_state=42)
         clusterer.fit(word_vectors)
 
         self.clusters = clusterer.labels_

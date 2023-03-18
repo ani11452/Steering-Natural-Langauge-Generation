@@ -6,21 +6,21 @@ from scoring import *
 import os
 
 class Generator:
-    def __init__(   self, 
-                    WordBank,
-                    score_mode='dist',
-                    target='far',
-                    weight=0.25,
-                    specificity=2, 
-                    top_p_val=0.75, 
-                    top_k_val=10, 
-                    search_space_size=4):
+    def __init__(self,
+                 wb,
+                 score_mode='dist',
+                 target='far',
+                 weight=0.25,
+                 specificity=2,
+                 top_p_val=0.75,
+                 top_k_val=10,
+                 search_space_size=4):
         # Initialize model and tokenizer
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
-        self.model = GPT2LMHeadModel.from_pretrained("gpt2")
-        self.WordBank = WordBank
-    
+        self.model = GPT2LMHeadModel.from_pretrained("gpt2").to(self.device)
+        self.WordBank = wb
+
         self.SCORE_MODE = score_mode
         self.TARGET = target
         self.WEIGHT = weight
@@ -46,8 +46,8 @@ class Generator:
         ret = np.random.choice(normalized_scores, p=normalized_scores)
         return np.where(normalized_scores==ret)[0][0], normalized_scores
 
-    
-    def top_p(self, sorted_vals, indices, p):
+    def top_p(self, tup, p):
+        sorted_vals, indices = tup
         trunc_sorted_vals = []
         sum_so_far = 0
         # reversed?
@@ -110,120 +110,60 @@ class Generator:
 
     # generate one word given a prompt_beam
 
-    def generate_one(self, prompt_beam, idx):
-        prompt = prompt_beam[0]
-        score = prompt_beam[1]
-        inputs = self.tokenizer(prompt, return_tensors="pt")
-        outputs = self.model(**inputs, labels=inputs["input_ids"], use_cache=False)
-        #loss = outputs.loss
+
+    def generate_one(self, prompts, done):
+        inputs = self.tokenizer(prompts, return_tensors="pt").to(self.device)
+        outputs = self.model(**inputs, labels=inputs["input_ids"])
         logits = outputs.logits
         next_token_scores = logits[:, -1, :].softmax(dim=-1)
+        sorted_vals, indices = torch.sort(next_token_scores)
 
-        sorted_vals, indices = torch.sort(next_token_scores[0])
-        
-        # Calculate Top-P
         if self.top_p_val > 0:
-            sorted_vals, indices = self.top_p(sorted_vals[:], indices[:], self.top_p_val)
+            x = zip(sorted_vals, indices)
+            res = [self.top_p(tup, p=self.top_p_val) for tup in x]
         else:
-            # else, we just do top-k
-            sorted_vals = sorted_vals[-self.top_k_val:]
-            indices = indices[-self.top_k_val:]
+            sorted_vals = sorted_vals[:, -self.top_k_val:]
+            indices = indices[:, -self.top_k_val:]
+            res = list(zip(sorted_vals.detach(), indices.detach()))
 
-        #print([tokenizer.decode(word) for word in indices])
+        top_embeddings = []
 
-        top_embeddings = [] 
-        self.get_embeddings(sorted_vals, indices, top_embeddings)
+        for tup in res:
+            new = []
+            self.get_embeddings(tup[0], tup[1], new)
+            top_embeddings.append(new)
 
-        #log = open("log.txt", "a")
-        #log.write('PRE-RERANK:\n')
-        #print_words(reversed(sorted_vals), reversed(indices), log)
+        all_scores = []
+        for prompt in top_embeddings:
+            dist_score = [distance_score(embed) for embed in prompt]
+            all_scores.append(dist_score)
 
-        #top_embeddings = [GloVe[tokenizer.decode(word).strip().lower()] for word in indices]
+        final_ranked_indices = []
+        sorted_vals = []
 
-        # calculate distance to cluster
-        if self.SCORE_MODE == 'dist':
-            dist_score = [  distance_score(embed, 
-                            self.WordBank.wb_embeddings, 
-                            self.WordBank.clusters, 
-                            self.WordBank.n_clusters) for embed in top_embeddings]
-        
-        # all other modes are deprecated for now
-       # elif self.SCORE_MODE == 'dot':
+        for i, tup in enumerate(res):
+            temp = self.rerank(tup[0], tup[1], all_scores[i])
+            final_ranked_indices.append(temp[0][-self.SEARCH_SPACE_NUM:])
+            sorted_vals.append(temp[1][-self.SEARCH_SPACE_NUM:])
 
+        for i, sort in enumerate(sorted_vals):
+            idx = self.sample_idx(sort[:])
+            decode = int(final_ranked_indices[i][-idx])
+            tok = self.tokenizer.decode(decode)
 
-        # sorted_vals are softmaxed logits
-        final_ranked_indices, sorted_vals = self.rerank(sorted_vals, indices, dist_score)
+            if tok == self.tokenizer.eos_token:
+                done.append(prompts[i])
+                del prompts[i]
+            else:
+                prompts[i] += tok
 
-        # replace -1 with -idx for true beam search
-        # add variability instead for true decoding (TODO)
-        # TODO normalization
-        
-        #log.write('POST-RERANK:\n')
-        #print_words(sorted_vals, final_ranked_indices, log)
-        
-        # must sample index if we use top_p
+        return prompts, done
 
-        ###
-        # TOP-K Search Space
-        sorted_vals = sorted_vals[-self.SEARCH_SPACE_NUM:]
-        final_ranked_indices = final_ranked_indices[-self.SEARCH_SPACE_NUM:]
-        ###
-        
-        ###
-        # TOP-P Search Space
-        #sorted_vals, final_ranked_indices = top_p(sorted_vals[:], final_ranked_indices[:], top_p_val)
-        #sorted_vals = torch.flip(sorted_vals, [-1])
-        ###
-        
-
-        # COMMENT IN TO ENABLE LOGGING
-        if self.top_p_val > 0:
-            #log.write('RERANK SPACE:\n')
-            #print_words(sorted_vals.softmax(dim=-1), final_ranked_indices, log)
-            #print_words(sort)
-            idx, norm_scores = self.sample_idx(sorted_vals[:])
-            #print_words(norm_scores, final_ranked_indices, log)
-        
-        best_word = self.tokenizer.decode(final_ranked_indices[-idx])
-        prompt += best_word
-
-        # add normalization by length
-
-
-        #return [prompt, score + s_vals[-idx].detach().numpy()]
-        #log.write('--------------------------\n')
-        #log.close()
-        #(1/len(prompt)+1) *
-        # adjusted to ensure that we keep generating more words.
-        # otherwise, we stop almost immediately since the probability of the
-        # second word is 20%, the probability of the first guessed word was ~80%
-        #print (sorted_vals[-idx].detach().numpy())
-        #print (len(prompt) + sorted_vals[-idx].detach().numpy())
-
-        # add score here! TODO
-        return [prompt, (len(prompt)*4) + sorted_vals[-idx].detach().numpy()] # subject to change
-
-    def beam_search(self, prompt, num_beams=1, tokens_to_generate=25):
-        beams = [[prompt, 0]]
-
-        #if os.path.exists("log.txt"):
-            # delete the file
-        #    os.remove("log.txt")
-        
-        for token_num in range(tokens_to_generate):
-            #print(token_num)
-            num_to_investigate = len(beams)
-            for beam_idx in range(num_to_investigate):
-                prompt_beam = beams[beam_idx]
-                for position in range(num_beams):
-                    ret = self.generate_one(prompt_beam, position)
-                    beams.append(ret)
-
-            # or normalize scores by length here
-            beams = sorted(beams, key=lambda x: -x[1])
-            
-            #FORCE MAX LENGTH GENERATION: beams = sorted(beams, key=lambda x: -len(x[0]))
-            #print(beams)
-            #print('-------------')
-            beams = beams[:num_beams]
-        return beams
+    def beam_search(self, prompts, tokens_to_generate=25):
+        res = []
+        done = []
+        for i in range(tokens_to_generate):
+            prompts, done = self.generate_one(prompts, done)
+            res += done
+            done = []
+        return prompts
