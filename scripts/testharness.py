@@ -3,7 +3,7 @@ from googleapiclient.errors import HttpError
 import json
 import time
 
-PROMPT_PATH = '../../realtoxicityprompts-data/prompts.jsonl'
+PROMPT_PATH = '../realtoxicityprompts-data/prompts.jsonl'
 
 class TestHarness:
     def __init__(self):

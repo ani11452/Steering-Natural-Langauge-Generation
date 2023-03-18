@@ -44,7 +44,7 @@ class Generator:
         normalized_scores = sorted_vals.numpy() / np.sum(sorted_vals.numpy())
         
         ret = np.random.choice(normalized_scores, p=normalized_scores)
-        return np.where(normalized_scores==ret)[0][0], normalized_scores
+        return np.where(normalized_scores==ret)[0][0]
 
     def top_p(self, tup, p):
         sorted_vals, indices = tup
@@ -112,7 +112,9 @@ class Generator:
 
 
     def generate_one(self, prompts, done):
-        inputs = self.tokenizer(prompts, return_tensors="pt").to(self.device)
+        self.tokenizer.padding_side = "left"
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.device)
         outputs = self.model(**inputs, labels=inputs["input_ids"])
         logits = outputs.logits
         next_token_scores = logits[:, -1, :].softmax(dim=-1)
@@ -135,7 +137,7 @@ class Generator:
 
         all_scores = []
         for prompt in top_embeddings:
-            dist_score = [distance_score(embed) for embed in prompt]
+            dist_score = [distance_score(embed, self.WordBank.wb_embeddings, self.WordBank.clusters, self.WordBank.n_clusters) for embed in prompt]
             all_scores.append(dist_score)
 
         final_ranked_indices = []

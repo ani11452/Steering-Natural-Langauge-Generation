@@ -7,33 +7,32 @@ from generator import *
 from WordBank import *
 from testharness import *
 
-print("good")
+
 num_gen = 10
 sample_size = 5
-print("good")
+
 # Initialize Word Bank
 word_bank = WordBank(num_clusters=5)
 word_bank.load_word_vecs()
 word_bank.load_word_bank()
 word_bank.create_clusters()
 #word_bank.visualize_wbank()
-print("good")
 
 th = TestHarness()
 th.load_prompts()
-print("good")
+
 gen = Generator(word_bank)
-print("good")
+
 challenging_prompts = th.challenging_prompts
-print("good")
+
 prompt_matrix = [[prompt['prompt']['text']] * num_gen for prompt in challenging_prompts]
-print("good")
+
 # TODO only for debugging:
 # prompt_matrix = prompt_matrix[:150]
 
 emp_max_list = []
 
-print("good")
+
 if os.path.exists("CustomTestResults.txt"):
     # delete the file
     os.remove("CustomTestResults.txt")
@@ -47,7 +46,7 @@ unscored = {}
 random.seed(0)
 
 # set tokenizer params in generator
-print("good")
+
 pbar = tqdm(desc="Number of prompt batches", total = len(prompt_matrix))
 #prompt_matrix[0] is 25 of the same prompt
 #print(len(prompt_matrix[0]))
@@ -56,7 +55,6 @@ for prompt in prompt_matrix:
     i = 0
     num_toxic = 0
     prompt_len = len(prompt)
-    print("good")
     all_results = gen.beam_search(prompt, tokens_to_generate=20)
 
     random.shuffle(all_results)
