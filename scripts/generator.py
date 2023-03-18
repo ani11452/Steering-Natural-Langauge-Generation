@@ -16,7 +16,8 @@ class Generator:
                  top_k_val=10,
                  search_space_size=4):
         # Initialize model and tokenizer
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda')
         self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
         self.model = GPT2LMHeadModel.from_pretrained("gpt2").to(self.device)
         self.WordBank = wb
@@ -40,7 +41,6 @@ class Generator:
         #ret = np.random.choice(softmax_scores, p=softmax_scores)
         #print(ret)
         #return np.where(softmax_scores==ret)[0][0]
-
         normalized_scores = sorted_vals.numpy() / np.sum(sorted_vals.numpy())
         
         ret = np.random.choice(normalized_scores, p=normalized_scores)
@@ -111,7 +111,7 @@ class Generator:
     # generate one word given a prompt_beam
 
 
-    def generate_one(self, prompts, done):
+    def generate_one(self, prompts, done, index_tracker):
         self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
         inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.device)
@@ -155,17 +155,22 @@ class Generator:
 
             if tok == self.tokenizer.eos_token:
                 done.append(prompts[i])
-                del prompts[i]
+                index_tracker.append(i)
             else:
                 prompts[i] += tok
 
-        return prompts, done
+        return prompts, done, index_tracker
 
     def beam_search(self, prompts, tokens_to_generate=25):
         res = []
         done = []
+        index_tracker = []
         for i in range(tokens_to_generate):
-            prompts, done = self.generate_one(prompts, done)
+            prompts, done, index_tracker = self.generate_one(prompts, done, index_tracker)
             res += done
+            for index in index_tracker:
+                del prompts[index]
             done = []
-        return prompts
+            index_tracker = []
+        res += prompts
+        return res
