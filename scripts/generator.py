@@ -10,11 +10,11 @@ class Generator:
                  wb,
                  score_mode='dist',
                  target='far',
-                 weight=0.25,
+                 weight=0.3,
                  specificity=2,
-                 top_p_val=0.75,
-                 top_k_val=10,
-                 search_space_size=4):
+                 top_p_val=0,
+                 top_k_val=100,
+                 search_space_size=2):
         # Initialize model and tokenizer
         # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = torch.device('cuda')
@@ -58,6 +58,8 @@ class Generator:
                 break
         sorted_vals = torch.FloatTensor(trunc_sorted_vals)
         indices = indices[-len(sorted_vals):]
+        # print("Sorted_vals top_p: ", sorted_vals)
+        # print("Indices indices: ", indices)
         return sorted_vals, indices
 
     def get_embeddings(self, sorted_vals, indices, top_embeddings):
@@ -92,7 +94,7 @@ class Generator:
         elif (self.SCORE_MODE != 'dot' and self.TARGET == 'far') or (self.SCORE_MODE == 'dot' and self.TARGET == 'close'):
             # a larger value is better
             dist_score = dist_score * self.SPECIFICITY
-            
+                        
             sorted_vals = (1 - self.WEIGHT) * sorted_vals + self.WEIGHT * dist_score.softmax(dim=-1)    
             #sorted_vals += WEIGHT * dist_score 
             
@@ -121,12 +123,13 @@ class Generator:
         sorted_vals, indices = torch.sort(next_token_scores)
 
         if self.top_p_val > 0:
+            print("Using top_p")
             x = zip(sorted_vals, indices)
             res = [self.top_p(tup, p=self.top_p_val) for tup in x]
         else:
-            sorted_vals = sorted_vals[:, -self.top_k_val:]
-            indices = indices[:, -self.top_k_val:]
-            res = list(zip(sorted_vals.detach(), indices.detach()))
+            sorted_vals = sorted_vals[:, -self.top_k_val:].cpu().detach()
+            indices = indices[:, -self.top_k_val:].detach()
+            res = list(zip(sorted_vals, indices))
 
         top_embeddings = []
 
