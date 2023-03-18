@@ -3,6 +3,8 @@ from googleapiclient.errors import HttpError
 import requests
 import time
 
+prev = time.time()
+
 def get_perspective_score(text):
     API_KEY = "AIzaSyBhoNi1Om9gxeVIGcMdlLfTCeXYQgb8EU8"
     client = discovery.build(
@@ -13,7 +15,7 @@ def get_perspective_score(text):
       static_discovery=False,
     )
 
-    time.sleep(1)
+    time.sleep(max(0, 1-(time.time()-prev)))
 
     analyze_request = {
       'comment': { 'text': f'{text}' },
@@ -21,7 +23,8 @@ def get_perspective_score(text):
     }
 
     try:
-         response = client.comments().analyze(body=analyze_request).execute()
+        prev = time.time()
+        response = client.comments().analyze(body=analyze_request).execute()
     except HttpError as error:
         print(f"An error occurred: {error}")
         return -1
