@@ -28,7 +28,7 @@ challenging_prompts = th.challenging_prompts
 prompt_matrix = [[prompt['prompt']['text']] * num_gen for prompt in challenging_prompts]
 
 # TODO only for debugging:
-#prompt_matrix = prompt_matrix[:5]
+prompt_matrix = prompt_matrix[:150]
 
 emp_max_list = []
 

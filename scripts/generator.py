@@ -10,15 +10,15 @@ class Generator:
                     WordBank,
                     score_mode='dist',
                     target='far',
-                    weight=0.5,
-                    specificity=5, 
-                    top_p_val=0.5, 
+                    weight=0.25,
+                    specificity=2, 
+                    top_p_val=0.75, 
                     top_k_val=10, 
-                    search_space_size=5):
+                    search_space_size=4):
         # Initialize model and tokenizer
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
-        self.model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
+        self.model = GPT2LMHeadModel.from_pretrained("gpt2")
         self.WordBank = WordBank
     
         self.SCORE_MODE = score_mode
