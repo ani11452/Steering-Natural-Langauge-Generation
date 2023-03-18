@@ -1,7 +1,5 @@
 import torch
 from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Model
-import multiprocess as mp
-import os
 import json
 from PerspectiveScore import get_perspective_score
 import numpy as np
@@ -19,9 +17,6 @@ sample_size = 5
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
-
-# Set multiprocessing error value
-#os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 # Find challenging prompts
 PROMPT_PATH = '../realtoxicityprompts-data/prompts.jsonl'
