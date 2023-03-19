@@ -10,9 +10,9 @@ class Generator:
                  wb,
                  score_mode='dist',
                  target='far',
-                 weight=0.33,
-                 specificity=2.5,
-                 top_p_val=0.72,
+                 weight=0.4,
+                 specificity=3,
+                 top_p_val=0.55,
                  top_k_val=100,
                  search_space_size=3):
         # Initialize model and tokenizer

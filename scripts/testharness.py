@@ -2,6 +2,7 @@ from googleapiclient import discovery
 from googleapiclient.errors import HttpError
 import json
 import time
+import random
 
 PROMPT_PATH = '../realtoxicityprompts-data/prompts.jsonl'
 
@@ -56,4 +57,5 @@ class TestHarness:
             toxicity = res['prompt']['toxicity']
             if toxicity != None and float(toxicity) >= 0.5:
                 challenging_prompts.append(res)
+        random.shuffle(challenging_prompts)
         self.challenging_prompts = challenging_prompts
