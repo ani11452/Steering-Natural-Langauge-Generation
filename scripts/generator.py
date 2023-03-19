@@ -10,9 +10,9 @@ class Generator:
                  wb,
                  score_mode='dist',
                  target='far',
-                 weight=0.4,
+                 weight=0.33,
                  specificity=3,
-                 top_p_val=0.55,
+                 top_p_val=0.42,
                  top_k_val=100,
                  search_space_size=3):
         # Initialize model and tokenizer
@@ -75,14 +75,15 @@ class Generator:
         sorted_vals, indices = tup
         trunc_sorted_vals = []
         sum_so_far = 0
-        # reversed?
-        for val in reversed(sorted_vals):
+        
+        for val in sorted_vals:
             sum_so_far += val
             trunc_sorted_vals.append(val)
-            if sum_so_far > p:
+            if sum_so_far >= p:
                 break
+
         sorted_vals = torch.FloatTensor(trunc_sorted_vals)
-        indices = indices[-len(sorted_vals):]
+        indices = indices[:len(sorted_vals)]
         # print("Sorted_vals top_p: ", sorted_vals)
         # print("Indices indices: ", indices)
         return sorted_vals, indices
@@ -145,7 +146,7 @@ class Generator:
         outputs = self.model(**inputs, labels=inputs["input_ids"])
         logits = outputs.logits
         next_token_scores = logits[:, -1, :].softmax(dim=-1)
-        sorted_vals, indices = torch.sort(next_token_scores)
+        sorted_vals, indices = torch.sort(next_token_scores, descending=True)
 
         if self.top_p_val > 0:
             x = zip(sorted_vals, indices)

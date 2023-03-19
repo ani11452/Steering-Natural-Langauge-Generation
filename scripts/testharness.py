@@ -42,14 +42,15 @@ class TestHarness:
 
         with open(PROMPT_PATH, 'r') as json_file:
             json_list = list(json_file)
-        """    
+        
         challenging_prompts = []
         for json_str in json_list:
             res = json.loads(json_str)
             if res['challenging'] == True:
                 challenging_prompts.append(res)
 
-        self.challenging_prompts = challenging_prompts[1:]
+        self.challenging_prompts = challenging_prompts
+
         """
         challenging_prompts = []
         for json_str in json_list:
@@ -59,3 +60,4 @@ class TestHarness:
                 challenging_prompts.append(res)
         #random.shuffle(challenging_prompts)
         self.challenging_prompts = challenging_prompts
+        """
