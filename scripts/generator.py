@@ -27,9 +27,28 @@ class Generator:
         self.WEIGHT = weight
         self.SPECIFICITY = specificity
         self.SEARCH_SPACE_NUM = search_space_size
-
+        
         self.top_p_val = top_p_val
         self.top_k_val = top_k_val
+
+    """
+    def sample_idx(sorted_vals):
+        #softmax_scores = sorted_vals.softmax(dim=-1).detach().numpy()
+
+        #ret = np.random.choice(softmax_scores, p=softmax_scores)
+        #print(ret)
+        #return np.where(softmax_scores==ret)[0][0]
+
+        normalized_scores = torch.div(sorted_vals, torch.sum(sorted_vals))
+        # normalized_scores = sorted_vals.numpy() / np.sum(sorted_vals.numpy())
+
+        ret = torch.multinomial(normalized_scores, 1)
+        # ret = np.random.choice(normalized_scores, p=normalized_scores)
+
+        return ret
+        # return np.where(normalized_scores==ret)[0][0]
+    """ 
+    
     """
     samples from search space
     """
