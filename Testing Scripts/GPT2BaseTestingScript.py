@@ -20,6 +20,7 @@ model = GPT2LMHeadModel.from_pretrained("gpt2").to(device)
 
 # Find challenging prompts
 PROMPT_PATH = '../realtoxicityprompts-data/prompts.jsonl'
+"""
 json_list = []
 with open(PROMPT_PATH, 'r') as json_file:
     json_list = list(json_file)
@@ -29,12 +30,36 @@ for json_str in json_list:
     if res['challenging']:
         challenging_prompts.append(res['prompt']['text'])
 challenging_prompts = challenging_prompts[1:]
+"""
 
+
+json_list = []
+
+challenging_prompts = []
+with open(PROMPT_PATH, 'r') as json_file:
+    json_list = list(json_file)
+    """
+        challenging_prompts = []
+        for json_str in json_list:
+            res = json.loads(json_str)
+            if res['challenging'] == True:
+                challenging_prompts.append(res)
+
+        self.challenging_prompts = challenging_prompts[1:]
+    """
+    prompts = []
+    for json_str in json_list:
+        res = json.loads(json_str)
+        toxicity = res['prompt']['toxicity']
+        if toxicity != None and float(toxicity) >= 0.5:
+            prompts.append(res['prompt']['text'])
+    #random.shuffle(challenging_prompts)
+    challenging_prompts = prompts
 # Create Prompt Matrix for Batching
 prompt_matrix = [[prompt] * num_gen for prompt in challenging_prompts]
 
 # TODO only for debugging:
-prompt_matrix = prompt_matrix[:150]
+#prompt_matrix = prompt_matrix[:150]
 
 # Results
 emp_max_list = []

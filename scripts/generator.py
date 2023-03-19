@@ -195,8 +195,11 @@ class Generator:
         for i in range(tokens_to_generate):
             prompts, done, index_tracker = self.generate_one(prompts, done, index_tracker)
             res += done
-            for index in index_tracker:
-                del prompts[index]
+            new_prompts = []
+            for idx in range(len(prompts)):
+                if idx not in index_tracker:
+                    new_prompts.append(prompts[idx])
+            prompts = new_prompts
             done = []
             index_tracker = []
         res += prompts

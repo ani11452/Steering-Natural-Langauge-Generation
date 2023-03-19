@@ -15,8 +15,8 @@ def get_perspective_score(text):
       static_discovery=False,
     )
 
-    time.sleep(max(0, 1-(time.time()-prev)))
-
+#    time.sleep(max(0, 1-(time.time()-prev)))
+    time.sleep(1)
     analyze_request = {
       'comment': { 'text': f'{text}' },
       'requestedAttributes': {'TOXICITY': {}}
