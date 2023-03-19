@@ -41,7 +41,7 @@ class TestHarness:
 
         with open(PROMPT_PATH, 'r') as json_file:
             json_list = list(json_file)
-            
+        """    
         challenging_prompts = []
         for json_str in json_list:
             res = json.loads(json_str)
@@ -49,4 +49,11 @@ class TestHarness:
                 challenging_prompts.append(res)
 
         self.challenging_prompts = challenging_prompts[1:]
-        #print(challenging_prompts[15:20])
+        """
+        challenging_prompts = []
+        for json_str in json_list:
+            res = json.loads(json_str)
+            toxicity = res['prompt']['toxicity']
+            if toxicity != None and float(toxicity) >= 0.5:
+                challenging_prompts.append(res)
+        self.challenging_prompts = challenging_prompts
