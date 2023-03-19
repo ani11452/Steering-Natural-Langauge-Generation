@@ -8,13 +8,13 @@ import os
 class Generator:
     def __init__(self,
                  wb,
-                 score_mode='dist',
+                 score_mode='dot',
                  target='far',
                  weight=0.3,
-                 specificity=2,
-                 top_p_val=0,
+                 specificity=3,
+                 top_p_val=0.75,
                  top_k_val=100,
-                 search_space_size=2):
+                 search_space_size=3):
         # Initialize model and tokenizer
         # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = torch.device('cuda')
@@ -30,6 +30,12 @@ class Generator:
         
         self.top_p_val = top_p_val
         self.top_k_val = top_k_val
+
+        self.scoring_function = None
+        if score_mode == 'dot':
+            self.scoring_function = dot_score
+        elif score_mode == 'dist':
+            self.scoring_function = distance_score
 
     """
     def sample_idx(sorted_vals):
@@ -100,7 +106,7 @@ class Generator:
         
         dist_score = torch.FloatTensor(dist_score)
         
-        if (self.SCORE_MODE != 'dot' and self.TARGET == 'close') or (self.SCORE_MODE == 'dot' and self.TARGET == 'far'):
+        if self.TARGET == 'close':
             # a smaller value is better
             dist_score = (1 / (dist_score + eps)) * self.SPECIFICITY
             # sorted_vals = torch.log(sorted_vals) + WEIGHT * torch.log(dist_score.softmax(dim=-1))
@@ -110,7 +116,7 @@ class Generator:
             
             # sorted_vals += dist_score.softmax(dim=-1)
             # sorted_vals += (((1 / (dist_score + eps)) ** exponent) * hyper_weight)
-        elif (self.SCORE_MODE != 'dot' and self.TARGET == 'far') or (self.SCORE_MODE == 'dot' and self.TARGET == 'close'):
+        elif self.TARGET == 'far':
             # a larger value is better
             dist_score = dist_score * self.SPECIFICITY
                         
@@ -142,7 +148,6 @@ class Generator:
         sorted_vals, indices = torch.sort(next_token_scores)
 
         if self.top_p_val > 0:
-            print("Using top_p")
             x = zip(sorted_vals, indices)
             res = [self.top_p(tup, p=self.top_p_val) for tup in x]
         else:
@@ -159,7 +164,7 @@ class Generator:
 
         all_scores = []
         for prompt in top_embeddings:
-            dist_score = [distance_score(embed, self.WordBank.wb_embeddings, self.WordBank.clusters, self.WordBank.n_clusters) for embed in prompt]
+            dist_score = [self.scoring_function(embed, self.WordBank.wb_embeddings, self.WordBank.clusters, self.WordBank.n_clusters) for embed in prompt]
             all_scores.append(dist_score)
 
         final_ranked_indices = []
