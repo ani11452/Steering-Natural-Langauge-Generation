@@ -48,7 +48,8 @@ def get_p_value(bst, value, p_dict):
             bst = bst.left
 
 def set_up(wb_embeddings, clusters, num_clusters, GloVe, word_bank):
-    global cluster_list = [[] for i in range(num_clusters)]
+    global cluster_list
+    cluster_list = [[] for i in range(num_clusters)]
     for i, cluster in enumerate(clusters):
         cluster_list[cluster].append(i)
 
@@ -64,10 +65,10 @@ def set_up(wb_embeddings, clusters, num_clusters, GloVe, word_bank):
         sample += 1
     idx_to_sample = idx_to_sample.reshape(len(word_bank), NUM_SAMPLES)
     
-    global p_look_up = []
+    global p_look_up
+    p_look_up = []
     for i in range(len(word_bank)):
-        p_look_up.append(create_p(idx_to_sample[i]))
-    
+        p_look_up.append(create_p(idx_to_sample[i])) 
 
 def distance_score(embedding, wb_embeddings, clusters, num_clusters):
     #print('correctly using distance score')
@@ -109,10 +110,10 @@ def cluster_stat(embedding, distances, cluster):
 
 def statistics(word_emb, wb_embeddings, clusters, num_clusters):
     scores = []
-    distances = wb_embeddings - embedding
-    distances = torch.linalg.norm(distances, dim=1)
+    distances = wb_embeddings - word_emb
+    distances = torch.linalg.norm(distances, dim=1).tolist()
     for cluster in cluster_list:
-        scores.append(cluster_stat(embedding, distances, cluster))
+        scores.append(cluster_stat(word_emb, distances, cluster))
     return min(scores)
 
 def dot_similarity(wb_embeddings, word_emb):

@@ -8,7 +8,7 @@ from WordBank import *
 from testharness import *
 
 
-num_gen = 10
+num_gen = 8
 sample_size = 5
 
 # Initialize Word Bank

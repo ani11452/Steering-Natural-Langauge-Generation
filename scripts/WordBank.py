@@ -100,5 +100,5 @@ class WordBank:
             plt.annotate(label, xy=(x, y), xytext=(5, 5), textcoords="offset points", fontsize=6, color=c, fontweight='bold')
         plt.show()
 
-    def set_up_scoring():
+    def set_up_scoring(self):
         set_up(self.wb_embeddings, self.clusters, self.n_clusters, self.GloVe, self.word_bank)
