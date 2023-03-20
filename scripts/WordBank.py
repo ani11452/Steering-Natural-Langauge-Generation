@@ -99,3 +99,6 @@ class WordBank:
         for c, label, x, y in zip(colors, self.word_bank[:], low_dim_wb[:, 0], low_dim_wb[:, 1]):
             plt.annotate(label, xy=(x, y), xytext=(5, 5), textcoords="offset points", fontsize=6, color=c, fontweight='bold')
         plt.show()
+
+    def set_up_scoring():
+        set_up(self.wb_embeddings, self.clusters, self.n_clusters, self.GloVe, self.word_bank)

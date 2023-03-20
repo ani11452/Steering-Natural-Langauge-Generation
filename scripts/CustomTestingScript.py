@@ -17,6 +17,7 @@ word_bank.load_word_vecs()
 word_bank.load_word_bank()
 word_bank.create_clusters()
 #word_bank.visualize_wbank()
+word_bank.set_up_scoring()
 
 th = TestHarness()
 th.load_prompts()

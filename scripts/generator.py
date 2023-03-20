@@ -36,7 +36,8 @@ class Generator:
             self.scoring_function = dot_score
         elif score_mode == 'dist':
             self.scoring_function = distance_score
-
+        elif score_mode == 'stat':
+            self.scoring_function = statistics
     """
     def sample_idx(sorted_vals):
         #softmax_scores = sorted_vals.softmax(dim=-1).detach().numpy()
@@ -83,7 +84,7 @@ class Generator:
                 break
 
         sorted_vals = torch.FloatTensor(trunc_sorted_vals)
-        indices = indices[:len(sorted_vals)]
+        indices = indices[:len(trunc_sorted_vals)]
         # print("Sorted_vals top_p: ", sorted_vals)
         # print("Indices indices: ", indices)
         return sorted_vals, indices
