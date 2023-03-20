@@ -12,9 +12,9 @@ class Generator:
                  target='far',
                  weight=0.33,
                  specificity=3,
-                 top_p_val=0.42,
+                 top_p_val=0.73,
                  top_k_val=100,
-                 search_space_size=3):
+                 search_space_size=2):
         # Initialize model and tokenizer
         # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = torch.device('cuda')
