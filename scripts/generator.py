@@ -9,7 +9,7 @@ class Generator:
     def __init__(self,
                  wb,
                  score_mode='stat',
-                 target='far',
+                 target='close',
                  weight=0.33,
                  specificity=3,
                  top_p_val=0.73,
