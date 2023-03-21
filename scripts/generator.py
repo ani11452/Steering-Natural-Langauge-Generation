@@ -8,7 +8,7 @@ import os
 class Generator:
     def __init__(self,
                  wb,
-                 score_mode='stat',
+                 score_mode='dist',
                  target='close',
                  weight=0.33,
                  specificity=3,
