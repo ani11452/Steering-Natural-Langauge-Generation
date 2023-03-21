@@ -8,3 +8,6 @@ realtoxicityprompts-data/*
 .DS_Store/*
 .DS_Store
 __pycache__/*
+scripts/realtoxicityprompts-data/*
+scripts/glove.6B/
+scripts/glove.6B/*
