@@ -8,6 +8,11 @@ NUM_SAMPLES = 50000
 
 # Global variables cluster_list, p_look_up made in set_up()
 
+
+"""
+Citation: Node & sortedArrayToBST implementation is from 
+https://www.geeksforgeeks.org/sorted-array-to-balanced-bst/
+"""
 class Node(object):
     def __init__(self, d):
         self.data = d
