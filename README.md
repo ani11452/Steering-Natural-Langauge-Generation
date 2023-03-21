@@ -1,5 +1,4 @@
-# Steering Natural Language Generation by Optimizing
-Vector-to-Cluster Distance
+# Steering Natural Language Generation by Optimizing Vector-to-Cluster Distance
 
 This repository includes the submission code for the Stanford CS224n Custom Project for Winter 2023. 
 
